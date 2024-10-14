@@ -14,19 +14,14 @@ import numpy as np
 import os.path
 # import serial
 import math
-from scipy.interpolate import interp1d
 from time import time
 import numpy as np
 from numpy import *
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import imutils
 import glob
 from tqdm import tqdm
 import PIL.ExifTags
 import PIL.Image
-import open3d as o3d
 
 puntos_click = list()
 
@@ -149,7 +144,7 @@ class ProyectividadOpenCV():
     def obtener_puntos_interes(self, imagen):
         """Se obtienen los puntos de interes cn SIFT"""
 
-        descriptor = cv2.xfeatures2d.SIFT_create()
+        descriptor = cv2.SIFT_create()
         (kps, features) = descriptor.detectAndCompute(imagen, None)
 
         return kps, features
@@ -1162,8 +1157,8 @@ class ProyectividadOpenCV():
         cap.release()
         cv2.destroyAllWindows()
 
-    def ndvi_calculation(self, url_img_RED="ejemplos/example_2/img_RED.TIF",
-                         url_img_NIR="ejemplos/example_2/img_NIR.TIF", width=700, height=500):
+    def ndvi_calculation(self, url_img_RED="visionPC/ejemplos/example_2/img_RED.TIF",
+                         url_img_NIR="visionPC/ejemplos/example_2/img_NIR.TIF", width=700, height=500):
         "En esta clase se calcula el índice NDVI a partir de un par de imágenes entregadas en el argumento"
 
         "Se leen las imágenes"
@@ -1401,11 +1396,11 @@ def main():
 
         example_2 = ProyectividadOpenCV()
 
-        img_RGB = cv2.imread("ejemplos/example_2/img_RGB.JPG", 0)
-        img_GRE = cv2.imread("ejemplos/example_2/img_GRE.TIF", 0)
-        img_NIR = cv2.imread("ejemplos/example_2/img_NIR.TIF", 0)
-        img_RED = cv2.imread("ejemplos/example_2/img_RED.TIF", 0)
-        img_REG = cv2.imread("ejemplos/example_2/img_REG.TIF", 0)
+        img_RGB = cv2.imread("visionPC/ejemplos/example_2/img_RGB.JPG", 0)
+        img_GRE = cv2.imread("visionPC/ejemplos/example_2/img_GRE.TIF", 0)
+        img_NIR = cv2.imread("visionPC/ejemplos/example_2/img_NIR.TIF", 0)
+        img_RED = cv2.imread("visionPC/ejemplos/example_2/img_RED.TIF", 0)
+        img_REG = cv2.imread("visionPC/ejemplos/example_2/img_REG.TIF", 0)
 
         merged_fix_bad = cv2.merge((img_GRE, img_RED, img_NIR))
         merged_fix_bad = cv2.resize(merged_fix_bad, (width, height), interpolation=cv2.INTER_LINEAR)
@@ -1417,9 +1412,11 @@ def main():
         mask_GRE = (stb_GRE > 0).astype(np.uint8)
         mask_REG = (stb_REG > 0).astype(np.uint8)
         mask_NIR = (stb_NIR > 0).astype(np.uint8)
+        mask_RGB = (stb_RGB > 0).astype(np.uint8)
 
         "Calcular la intersección de las tres máscaras para encontrar la región común"
         mask_intersection = cv2.bitwise_and(mask_GRE, mask_REG)
+        mask_intersection = cv2.bitwise_and(mask_RGB, mask_intersection)
         mask_intersection = cv2.bitwise_and(mask_intersection, mask_NIR)
 
         "Encontrar los contornos de la región válida común"
@@ -1432,11 +1429,14 @@ def main():
         cropped_GRE = stb_GRE[y:y+h, x:x+w]
         cropped_REG = stb_REG[y:y+h, x:x+w]
         cropped_NIR = stb_NIR[y:y+h, x:x+w]
+        cropped_RGB = stb_RGB[y:y+h, x:x+w]
 
         "Guardar las imágenes recortadas"
         cv2.imwrite('cropped_GRE.jpg', cropped_GRE)
         cv2.imwrite('cropped_REG.jpg', cropped_REG)
         cv2.imwrite('cropped_NIR.jpg', cropped_NIR)
+        cv2.imwrite('cropped_RGB.jpg', cropped_RGB)
+
 
         merged_fix_stb = cv2.merge((stb_GRE, stb_RED, stb_NIR))
 
@@ -1458,8 +1458,8 @@ def main():
         example_3 = ProyectividadOpenCV()
 
         print("Para este ejemplo se utilizará el mismo conjunto de imágenes del ejemplo 2")
-        url_img_RED = "ejemplos/example_2/img_RED.TIF"
-        url_img_NIR = "ejemplos/example_2/img_NIR.TIF"
+        url_img_RED = "visionPC/ejemplos/example_2/img_RED.TIF"
+        url_img_NIR = "visionPC/ejemplos/example_2/img_NIR.TIF"
 
         "Se envían las URL y se obtienen los índices NDVI y una imagen adecuada para visualizar"
 
