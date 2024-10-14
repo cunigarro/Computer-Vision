@@ -14,14 +14,19 @@ import numpy as np
 import os.path
 # import serial
 import math
+from scipy.interpolate import interp1d
 from time import time
 import numpy as np
 from numpy import *
+import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import imutils
 import glob
 from tqdm import tqdm
 import PIL.ExifTags
 import PIL.Image
+import open3d as o3d
 
 puntos_click = list()
 
