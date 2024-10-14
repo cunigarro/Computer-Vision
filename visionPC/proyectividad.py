@@ -101,7 +101,7 @@ class ProyectividadOpenCV():
 
         (kpsBase, featuresBase) = self.obtener_puntos_interes(imagen_base)
         (kpsAdicional, featuresAdicional) = self.obtener_puntos_interes(imagen_a_estabilizar)
-        # Se buscan las coincidencias        
+        # Se buscan las coincidencias
 
         M = self.encontrar_coincidencias(imagen_base, imagen_a_estabilizar, kpsBase, kpsAdicional, featuresBase,
                                          featuresAdicional, radio)
@@ -366,7 +366,7 @@ class ProyectividadOpenCV():
         xc = 46 / 2
         yc = 46 * math.sin(math.pi / 3)
 
-        # Dimenciones de los eslabones y acopladores del manipulador (Unidades en cm.) 
+        # Dimenciones de los eslabones y acopladores del manipulador (Unidades en cm.)
         manivela = 19
 
         # Eslabones (Cadenas Cinematica 1)
@@ -402,7 +402,7 @@ class ProyectividadOpenCV():
         #        xp=23#               23.5
         #        yp=13.279056191#       13.279056191
 
-        # Coordenadas de la plataforma movil 
+        # Coordenadas de la plataforma movil
         # Coordenadas del punto G.
         xg = xp - h * math.cos(phi + (math.pi / 6))
         yg = yp - h * math.sin(phi + (math.pi / 6))
@@ -1412,6 +1412,31 @@ def main():
 
         stb_RGB, stb_GRE, stb_NIR, stb_RED, stb_REG = example_2.img_alignment_sequoia(img_RGB, img_GRE, img_NIR,
                                                                                       img_RED, img_REG, width, height)
+
+        "Se crean máscaras binarizadas para cada imagen"
+        mask_GRE = (stb_GRE > 0).astype(np.uint8)
+        mask_REG = (stb_REG > 0).astype(np.uint8)
+        mask_NIR = (stb_NIR > 0).astype(np.uint8)
+
+        "Calcular la intersección de las tres máscaras para encontrar la región común"
+        mask_intersection = cv2.bitwise_and(mask_GRE, mask_REG)
+        mask_intersection = cv2.bitwise_and(mask_intersection, mask_NIR)
+
+        "Encontrar los contornos de la región válida común"
+        contours, _ = cv2.findContours(mask_intersection, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        "Encontrar el rectángulo delimitador más pequeño para la región común"
+        x, y, w, h = cv2.boundingRect(contours[0])
+
+        "Recortar cada imagen usando el rectángulo delimitador"
+        cropped_GRE = stb_GRE[y:y+h, x:x+w]
+        cropped_REG = stb_REG[y:y+h, x:x+w]
+        cropped_NIR = stb_NIR[y:y+h, x:x+w]
+
+        "Guardar las imágenes recortadas"
+        cv2.imwrite('cropped_GRE.jpg', cropped_GRE)
+        cv2.imwrite('cropped_REG.jpg', cropped_REG)
+        cv2.imwrite('cropped_NIR.jpg', cropped_NIR)
 
         merged_fix_stb = cv2.merge((stb_GRE, stb_RED, stb_NIR))
 
