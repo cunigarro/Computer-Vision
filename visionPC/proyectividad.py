@@ -1441,7 +1441,7 @@ def main():
         ndvi_index, ndvi_image = example_3.ndvi_calculation(url_img_RED, url_img_NIR)
 
         "Se pinta la imagen con colormap de OpenCV. En mi caso, RAINBOW fue la mejor opción"
-        im_color = cv2.applyColorMap(ndvi_image, cv2.COLORMAP_RAINBOW)
+        im_color = cv2.applyColorMap(ndvi_image, cv2.COLORMAP_JET)
 
         print(ndvi_index)
 
